@@ -64,11 +64,11 @@ pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     "nand" => "{R4}   0 100",
     "ld"   => "{R4}   0 101",
 
-    "swaf"  => "{R4}   1 001",
-    "addf"  => "{R4}   1 010",
-    "addif" => "{IMM4} 1 011",
-    "nandf" => "{R4}   1 100",
-    "ldf"   => "{R4}   1 101",
+    "swa.f"  => "{R4}   1 001",
+    "add.f"  => "{R4}   1 010",
+    "addi.f" => "{IMM4} 1 011",
+    "nand.f" => "{R4}   1 100",
+    "ld.f"   => "{R4}   1 101",
     
     "st"   => "{R4}   0 110",
     "b"    => "{C4}   0 111"
