@@ -611,7 +611,7 @@ impl Parser{
         }
     }
 
-    pub fn expand_block(pseudo_instructions: &HashMap<String, (Vec<String>,Vec<Token>)>, tokens: Vec<Token>) -> Vec<Token>{
+    pub fn expand_block(pseudo_instructions: &HashMap<String, (Vec<String>,Vec<Token>)>, tokens: &Vec<Token>) -> Vec<Token>{
         let mut new_tokens: Vec<Token> = Vec::new();
 
         for token in tokens{
@@ -623,7 +623,7 @@ impl Parser{
 
     fn expand_pseudo_instruction(pseudo_instructions: &HashMap<String, (Vec<String>,Vec<Token>)>, token: &Token) -> Vec<Token>{
         match token{
-            Token::Label { name } => return vec![token.clone()],
+            Token::Label { .. } => return vec![token.clone()],
             Token::Instruction { name, args } => {
                 match pseudo_instructions.get(&name.value){
                     Some(a) => {
@@ -632,7 +632,7 @@ impl Parser{
                             Self::replace_temp_arg_with_val(arg, &mut args[i].clone(), &mut vec);
                         }
 
-                        return Self::expand_block(pseudo_instructions, vec);
+                        return Self::expand_block(pseudo_instructions, &vec);
                     }
                     None => return vec![token.clone()]
                 }
@@ -642,13 +642,8 @@ impl Parser{
 
     pub fn expand_pseudo_instructions(self: &mut Self){
         match self.pseudo_instructions.clone(){
-            Some(a) => {
-                self.tokens = Self::expand_block(&a, self.tokens.clone());
-            }
-
-            None => {
-
-            }
+            Some(a) => self.tokens = Self::expand_block(&a, &self.tokens),
+            None => unreachable!()
         }
     }
 

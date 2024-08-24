@@ -6,7 +6,6 @@ use crate::{InstructionPart, Lexem, LexemType, Token, TYPES};
 pub struct CodeGen<'a>{
     tokens: &'a[Token],
     instruction_set: &'a HashMap<&'static str,Vec<InstructionPart>>,
-    pseudo_instructions: HashMap<String, (Vec<String>,Vec<Token>)>,
     pub bytes: Vec<u8>
 }
 
@@ -21,12 +20,11 @@ pub fn get_value_from_number_token<'a>(lexem: &Lexem) -> usize{
 }
 
 impl CodeGen<'_>{
-    pub fn new<'a>(tokens: &'a[Token], instruction_set: &'a HashMap<&'static str,Vec<InstructionPart>>, pseudo_instructions: HashMap<String, (Vec<String>,Vec<Token>)>,) -> CodeGen<'a>{
+    pub fn new<'a>(tokens: &'a[Token], instruction_set: &'a HashMap<&'static str,Vec<InstructionPart>>) -> CodeGen<'a>{
         CodeGen{
             tokens,
             instruction_set,
-            bytes: Vec::new(),
-            pseudo_instructions
+            bytes: Vec::new()
         }
     }
 

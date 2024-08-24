@@ -48,16 +48,12 @@ fn main() {
     let mut lexer: Lexer = Lexer::new();
     
     lexer.lex(&source_filename, &content);
-
-    let pseudo_instructions = PseudoInstructions::initialize();
     
-    let mut parser: Parser = Parser::new(Some(pseudo_instructions.clone()));
-
-    
+    let mut parser: Parser = Parser::new(Some(PseudoInstructions::initialize()));
     
     parser.parse(&lexer.lexems);
     
-    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions, pseudo_instructions);
+    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions);
 
     codegen.gen();
 
