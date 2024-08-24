@@ -164,11 +164,14 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         addi 1
         add src
     ",
-    "j addr" => "
+    "brc cond, addr" => "
         lim ((addr >> 8) & 0xFF)
         swa seg
         lim (addr & 0xFF)
-        b true
-    "
+        b cond
+    ",
+    "j addr" => "
+        brc true, addr
+    ",
 
 };
