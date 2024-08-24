@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use crate::{get_value_from_number_token, Lexem, LexemType};
 
-use super::pseudo_instructions::PseudoInstructions;
-
 #[derive(Debug, Clone)]
 pub enum Token{
     Label{
@@ -67,31 +65,6 @@ fn fix_sub_label(last_label: &String, args: Vec<Lexem>) -> Vec<Lexem>{
     }
 
     new_args
-}
-
-
-fn unpseudo_arg(arg: Lexem, pseudo_name: &Lexem, arg_hashmap: &HashMap<String, Lexem>) -> Lexem{
-    
-    match arg.ttype.clone(){
-        LexemType::Closure { args } => {
-            let mut new_args: Vec<Box<Lexem>> = Vec::new();
-            for arg in args{
-                let arg = *arg;
-                new_args.push(Box::new(unpseudo_arg(arg, pseudo_name, arg_hashmap)));
-            }
-
-            Lexem::new(arg.value, LexemType::Closure { args: [new_args[0].clone(),new_args[1].clone(),new_args[2].clone()] }, arg.row, arg.col, arg.filename)
-        }
-        _ => {
-            let arg_name = arg.value.clone();
-            let new_arg = match arg_hashmap.get(&arg_name){
-                Some(a) => a.clone(),
-                None => Lexem::new(arg_name, arg.ttype, pseudo_name.row, pseudo_name.col, pseudo_name.filename.clone())
-            };
-
-            new_arg
-        }
-    }
 }
 
 fn eval_closure(arg: Lexem, args: [Box<Lexem>; 3]) -> Lexem{
@@ -368,65 +341,6 @@ impl Parser{
         }
     }
 
-
-    fn convert_pseudo_instructions(self: &mut Self){
-        let pseudo_instructions = PseudoInstructions::initialize();
-
-        let mut after_pseudo: Vec<Token> = Vec::new();
-
-        for token in self.tokens.iter_mut(){
-            match token{
-                Token::Instruction { name, args } =>{
-                    if pseudo_instructions.keys().collect::<Vec<&String>>().contains(&&name.value){
-                        let mut arg_hashmap: HashMap<String, Lexem> = HashMap::new();
-
-                        let pseudo = match pseudo_instructions.get(name.value.as_str()){
-                            Some(a) => a,
-                            None => {
-                                println!("{}:{}:{} Pasrser pseudo_instructions: Impossible Error", name.filename, name.row, name.col);
-                                std::process::exit(1);
-                            }
-                        }.clone();
-
-                        if args.len() != pseudo.0.len(){
-                            println!("{}:{}:{} Expects {} ammount of args got {}", name.filename, name.row, name.col, pseudo.0.len(), args.len());
-                        }
-
-                        for (i, arg) in pseudo.0.iter().enumerate(){
-                            arg_hashmap.insert(arg.clone(), args[i].clone());
-                        }
-
-                        let pseudo_name = name;
-
-                        for token in pseudo.1{
-                            match token{
-                                Token::Instruction { name, args } => {
-                                    let mut new_args: Vec<Lexem> = Vec::new();
-                                    for arg in args{
-                                        new_args.push(unpseudo_arg(arg, pseudo_name, &arg_hashmap));
-                                    }
-                                    after_pseudo.push(Token::Instruction { name, args: new_args });
-                                    // after_pseudo.push(Token::Instruction { name: Lexem::new(name.value, name.ttype, pseudo_name.row, pseudo_name.col, pseudo_name.filename.clone()), args: new_args });
-                                }
-                                Token::Label { name } => {
-                                    println!("{}:{}:{} Currently labels are not possible inside pseudo instruction: {}", pseudo_name.filename, pseudo_name.row, pseudo_name.col, name.value);
-                                }
-                            }
-                        }
-
-
-                    }else{
-                        after_pseudo.push(Token::Instruction {  name: name.clone(), args: args.clone() });
-                    }
-                },
-                Token::Label { name } => {
-                    after_pseudo.push(Token::Label { name: name.clone() });
-                }
-            }
-        }
-        self.tokens = after_pseudo;
-    }
-
     fn discover_labels(self: &mut Self) -> (Vec<Token>, HashMap<String, usize>) {
         let mut origin: usize = 0;
         self.cursor = 0;
@@ -618,15 +532,11 @@ impl Parser{
         self.tokens = cleaned_tokens;
     }
 
-    // fn colapse_closure(self: &mut Self, arg: Lexem){
-
-    // }
-
-    fn colapse_closures(self: &mut Self){
+    pub fn colapse_closures(tokens: &mut Vec<Token>){
         
         let mut new_tokens = Vec::new();
         
-        for token in self.tokens.iter(){
+        for token in tokens.iter(){
             match token{
                 Token::Instruction { name, args } => {
 
@@ -655,18 +565,18 @@ impl Parser{
             }
         }
 
-        self.tokens = new_tokens;
+        *tokens = new_tokens;
+
     }
 
     pub fn parse<'a>(self: &mut Self, lexems: &Vec<Lexem>){
         
         self.first_stage_parse(lexems);
 
-        self.convert_pseudo_instructions();
 
         self.calculate_labels();
 
-        self.colapse_closures();
+        Self::colapse_closures(&mut self.tokens);
 
     }
 }

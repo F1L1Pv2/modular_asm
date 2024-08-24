@@ -16,6 +16,7 @@ use components::parser::*;
 use components::codegen::*;
 use components::common::*;
 use components::instruction_lexer::*;
+use components::pseudo_instructions::PseudoInstructions;
 
 fn main() {
     let mut instruction_lexer: InstructionsLexer = InstructionsLexer::new();
@@ -42,15 +43,16 @@ fn main() {
 
     file.read_to_string(&mut content).unwrap();
 
+    
     let mut lexer: Lexer = Lexer::new();
-
-    lexer.lex(&source_filename, &content);;
+    
+    lexer.lex(&source_filename, &content);
     
     let mut parser: Parser = Parser::new();
     
     parser.parse(&lexer.lexems);
     
-    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions);
+    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions, PseudoInstructions::initialize());
 
     codegen.gen();
 

@@ -34,22 +34,6 @@ pub const REGISTERS_TO_VAL: phf::Map<&'static str, usize> = phf_map!{
     "r13" => 13,
     "r14" => 14,
     "r15" => 15,
-    "r16" => 16,
-    "r17" => 17,
-    "r18" => 18,
-    "r19" => 19,
-    "r20" => 20,
-    "r21" => 21,
-    "r22" => 22,
-    "r23" => 23,
-    "r24" => 24,
-    "r25" => 25,
-    "r26" => 26,
-    "r27" => 27,
-    "r28" => 28,
-    "r29" => 29,
-    "r30" => 30,
-    "r31" => 31,
 };
 
 pub const CONDITIONS_TO_VAL: phf::Map<&'static str, usize> = phf_map!{
@@ -74,13 +58,20 @@ pub const CONDITIONS_TO_VAL: phf::Map<&'static str, usize> = phf_map!{
 
 pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     "ext"  => "00000  000",
-    "swa"  => "{R5}   001",
-    "add"  => "{R5}   010",
-    "addi" => "{IMM5} 011",
-    "nand" => "{R5}   100",
-    "ld"   => "{R5}   101",
-    "st"   => "{R5}   110",
-    "b"    => "{C5}   111"
+    "swa"  => "{R4}   0 001",
+    "add"  => "{R4}   0 010",
+    "addi" => "{IMM4} 0 011",
+    "nand" => "{R4}   0 100",
+    "ld"   => "{R4}   0 101",
+
+    "swaf"  => "{R4}   1 001",
+    "addf"  => "{R4}   1 010",
+    "addif" => "{IMM4} 1 011",
+    "nandf" => "{R4}   1 100",
+    "ldf"   => "{R4}   1 101",
+    
+    "st"   => "{R4}   0 110",
+    "b"    => "{C4}   0 111"
 };
 
 // Closure ops
@@ -95,17 +86,94 @@ pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
 // >> bitshift right
 
 pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
+    "nop" => "b false",
     "lim a" => "
         swa zero
-        addi (a >> 3)
+        addi (((a >> 4) + ((a & 8) << 1 )) & 0b00001111)
         add acc
         add acc
         add acc
-        addi (a & 0b00000111)
+        add acc
+        addi (a & 0b00001111)
     ",
-
     "lda src" => "
         swa zero
         add src
+    ",
+    "sta dest" => "
+        swa dest
+        swa zero
+        add dest
+    ",
+    "mov dest, src" => "
+        swa dest
+        swa zero
+        add src
+        swa dest
+    ",
+    "not src" => "
+        swa zero
+        add src
+        nand acc
+    ",
+    "and src" => "
+        nand src
+        nand acc
+    ",
+    "andi imm" => "
+        swa tr1
+        swa zero
+        addi (imm >> 4)
+        add acc
+        add acc
+        add acc
+        addi (imm & 0b00001111)
+        nand tr1
+        nand acc
+    ",
+    "or src" => "
+        nand acc
+        swa tr1
+        swa zero
+        add src
+        nand acc
+        nand tr1
+    ",
+    "ori imm" => "
+        nand acc
+        swa tr1
+        swa zero
+        addi (( imm ^ 0xFF ) >> 3)
+        add acc
+        add acc
+        add acc
+        addi ((imm ^ 0xFF ) & 0b00000111)
+        nand tr1
+    ",
+    "xor src" => "
+        swa tr1
+        swa zero
+        add src
+        nand tr1
+        swa tr1
+        nand tr1
+        swa tr1
+        nand src
+        nand tr1
+    ",
+    "sub src" => "
+        swa tr1
+        nand src
+        addi 1
+        add tr1
+    ",
+    "suba src" => "
+        nand acc
+        addi 1
+        add src
+    ",
+    "j addr" => "
+        b true
     "
+
 };

@@ -50,9 +50,6 @@ impl PseudoInstructions{
             pseudo_instructions_parser.first_stage_parse(&pseudo_instructions_lexer.lexems);
 
             pseudo_instructions.insert(pure_name.to_string(), (p_args.clone(),pseudo_instructions_parser.tokens.clone()));
-
-            
-
         }
 
         
