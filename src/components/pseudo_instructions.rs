@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{Lexer, Parser, Token, PSEUDO_INSTRUCTIONS};
+use crate::{Token, Parser, Lexer, PSEUDO_INSTRUCTIONS};
 
 #[derive(Debug)]
 pub struct PseudoInstructions{}

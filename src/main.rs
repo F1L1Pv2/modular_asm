@@ -11,10 +11,11 @@ use std::path::Path;
 use std::{fs::File, io::Read};
 
 mod components;
+mod config;
 use components::lexer::*;
 use components::parser::*;
 use components::codegen::*;
-use components::common::*;
+use config::*;
 use components::instruction_lexer::*;
 use components::pseudo_instructions::PseudoInstructions;
 

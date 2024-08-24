@@ -29,4 +29,4 @@
       limb R1, main.loop
     ```
 - flexible instruction set and registers
-  #### just look at common.rs inside components folder and see for yourself
+  #### just look at config.rs inside src folder and see for yourself

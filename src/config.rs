@@ -87,14 +87,14 @@ pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
 
 pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     "nop" => "b false",
-    "lim a" => "
+    "lim imm" => "
         swa zero
-        addi (((a >> 4) + ((a & 8) << 1 )) & 0b00001111)
+        addi (((imm >> 4)+(( imm & 8 ) << 1)) & 0b00001111)
         add acc
         add acc
         add acc
         add acc
-        addi (a & 0b00001111)
+        addi (imm & 0b00001111)
     ",
     "lda src" => "
         swa zero
@@ -120,37 +120,24 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         nand src
         nand acc
     ",
-    "andi imm" => "
+    "andi imm" => "    
         swa tr1
-        swa zero
-        addi (imm >> 4)
-        add acc
-        add acc
-        add acc
-        addi (imm & 0b00001111)
-        nand tr1
-        nand acc
+        lim imm
+        and tr1
     ",
-    "or src" => "
+    "or src" => "   
         nand acc
         swa tr1
-        swa zero
-        add src
-        nand acc
+        not src
         nand tr1
     ",
     "ori imm" => "
         nand acc
         swa tr1
-        swa zero
-        addi (( imm ^ 0xFF ) >> 3)
-        add acc
-        add acc
-        add acc
-        addi ((imm ^ 0xFF ) & 0b00000111)
+        lim imm
         nand tr1
     ",
-    "xor src" => "
+    "xor src" => "    
         swa tr1
         swa zero
         add src
@@ -160,6 +147,11 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         swa tr1
         nand src
         nand tr1
+    ",
+    "xori imm" => "
+        swa tr2
+        lim imm
+        xor tr2
     ",
     "sub src" => "
         swa tr1
@@ -173,6 +165,9 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         add src
     ",
     "j addr" => "
+        lim ((addr >> 8) & 0xFF)
+        swa seg
+        lim (addr & 0xFF)
         b true
     "
 
