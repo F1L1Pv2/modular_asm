@@ -48,12 +48,16 @@ fn main() {
     let mut lexer: Lexer = Lexer::new();
     
     lexer.lex(&source_filename, &content);
+
+    let pseudo_instructions = PseudoInstructions::initialize();
     
-    let mut parser: Parser = Parser::new();
+    let mut parser: Parser = Parser::new(Some(pseudo_instructions.clone()));
+
+    
     
     parser.parse(&lexer.lexems);
     
-    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions, PseudoInstructions::initialize());
+    let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions, pseudo_instructions);
 
     codegen.gen();
 
@@ -67,6 +71,8 @@ fn main() {
     let _ =file.write(&codegen.bytes);
 
     println!("Assembled file: {} ({} bytes)", output_str, codegen.bytes.len());
+
+    dbg!()
     
 
 }

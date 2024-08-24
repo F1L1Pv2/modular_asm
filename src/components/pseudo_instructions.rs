@@ -8,7 +8,7 @@ pub struct PseudoInstructions{}
 impl PseudoInstructions{
     pub fn initialize() -> HashMap<String, (Vec<String>,Vec<Token>)>{
         let mut pseudo_instructions_lexer: Lexer = Lexer::new();
-        let mut pseudo_instructions_parser: Parser = Parser::new();
+        let mut pseudo_instructions_parser: Parser = Parser::new(None);
 
         let mut pseudo_instructions: HashMap<String, (Vec<String>,Vec<Token>)> = HashMap::new();
         

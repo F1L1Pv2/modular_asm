@@ -1,1 +1,4 @@
-j 0x200
+swa zero
+label1:
+jmp 0x200
+label2:

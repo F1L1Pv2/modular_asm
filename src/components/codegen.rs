@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{InstructionPart, Lexem, LexemType, Parser, Token, TYPES};
+use crate::{InstructionPart, Lexem, LexemType, Token, TYPES};
 
 #[derive(Debug)]
 pub struct CodeGen<'a>{
@@ -56,45 +56,6 @@ impl CodeGen<'_>{
         std::process::exit(1);
     }
 
-    fn replace_lexem_with_val(arg: &mut Lexem, arg_in: &String, replace_with: &mut Lexem){
-        match &mut arg.ttype{
-
-            LexemType::Closure { args } => {
-                if &arg.value == arg_in{
-                    arg.value = replace_with.value.clone();
-                }
-                for arg in args{
-                    Self::replace_lexem_with_val(arg, arg_in, replace_with);
-                }
-            }
-
-            _ => {
-                if &arg.value == arg_in{
-                    arg.value = replace_with.value.clone();
-                    arg.ttype = replace_with.ttype.clone();
-                }
-            }
-        }
-    }
-
-    fn replace_temp_arg_with_val(self: &Self, arg_in: &String, replace_with: &mut Lexem, tokens: &mut Vec<Token>){
-
-        for token in tokens.iter_mut(){
-            match token {
-                Token::Instruction { name, args } => {
-                    if &name.value == arg_in{
-                        name.value = replace_with.value.clone();
-                    }
-
-                    for arg in args{
-                        Self::replace_lexem_with_val(arg, arg_in, replace_with);
-                    }
-                }
-
-                _ => {}
-            }
-        }
-    }
 
     fn gen_token(self: &mut Self, token: &Token){
         match token{
@@ -230,25 +191,25 @@ impl CodeGen<'_>{
                         let instruction = match self.instruction_set.get(&name.value.as_str()){
                             Some(a) => a,
                             None => {
-                                match self.pseudo_instructions.get(&name.value){
-                                    Some(a) => {
+                                // match self.pseudo_instructions.get(&name.value){
+                                //     Some(a) => {
 
-                                        let mut vec = a.1.clone();
+                                //         let mut vec = a.1.clone();
 
-                                        for (i, arg) in a.0.iter().enumerate(){
-                                            self.replace_temp_arg_with_val(arg, &mut args[i].clone(), &mut vec);
-                                        }
-                                        Parser::colapse_closures(&mut vec);
+                                //         for (i, arg) in a.0.iter().enumerate(){
+                                //             self.replace_temp_arg_with_val(arg, &mut args[i].clone(), &mut vec);
+                                //         }
+                                //         Parser::colapse_closures(&mut vec);
 
-                                        self.gen_block(vec.as_slice());
-                                        return;
-                                    }
+                                //         self.gen_block(vec.as_slice());
+                                //         return;
+                                //     }
 
-                                    None => {
-                                        println!("{}:{}:{} Unknown instruction {}", name.filename, name.row, name.col, name.value);
-                                        std::process::exit(1);
-                                    }
-                                }
+                                //     None => {
+                                //     }
+                                // }
+                                println!("{}:{}:{} Unknown instruction {}", name.filename, name.row, name.col, name.value);
+                                std::process::exit(1);
                             }
                         }.as_slice();
 
