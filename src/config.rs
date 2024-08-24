@@ -170,7 +170,7 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         lim (addr & 0xFF)
         b cond
     ",
-    "j addr" => "
+    "jmp addr" => "
         brc true, addr
     ",
 
