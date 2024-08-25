@@ -107,8 +107,7 @@ impl CodeGen<'_>{
                                 },
                                 LexemType::String => {
                                     for ch in arg.value.chars(){
-                                        self.bytes.push(0);
-                                        self.bytes.push(ch as u8);
+                                        self.bytes.append(&mut (ch as u16).to_be_bytes().to_vec());
                                     }
                                 },
                                 _ => {

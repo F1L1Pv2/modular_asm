@@ -1,4 +1,4 @@
-pub const SINGLE_LEXEMS: &[char] = &[',',':', '(', ')'];
+pub const SINGLE_LEXEMS: &[char] = &[',',':', '(', ')', '$'];
 
 pub const OP_LEXEMS: &[&'static str] = &["+", "-", "/", "*", "&", "|", "^","<<", ">>"];
 

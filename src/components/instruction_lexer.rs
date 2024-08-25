@@ -19,6 +19,7 @@ pub enum InstructionPart{
     },
 }
 
+#[derive(Debug)]
 pub struct InstructionsLexer{
     cursor: usize,
     pub instructions: HashMap<&'static str,Vec<InstructionPart>>
@@ -47,6 +48,41 @@ impl InstructionsLexer{
     fn chop_white_space(self: &mut Self, str: &'static str){
         while self.cursor < str.len() && self.peek(str).unwrap().is_whitespace(){
             self.chop(str);
+        }
+    }
+
+    pub fn get_instruction_size(self: &Self, name: &str) -> usize{
+        match self.instructions.get(name){
+            Some(a) => {
+                let mut instruction_size: usize = 0;
+                for instruction_part in a{
+                    match instruction_part {
+                        InstructionPart::Const { val } => {
+                            instruction_size += val.len();
+                        }
+
+                        InstructionPart::Extra { size } => {
+                            instruction_size += size;
+                        }
+
+                        InstructionPart::Imm { size } => {
+                            instruction_size += size;
+                        }
+                        InstructionPart::Type { val: _, size } => {
+                            instruction_size += size;
+                        }
+                    }
+                }
+
+                let mut return_size = instruction_size / 8;
+
+                if instruction_size % 8 != 0{
+                    return_size += 1;
+                }
+
+                return_size
+            }
+            None => return usize::MAX
         }
     }
 
