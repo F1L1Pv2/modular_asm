@@ -89,7 +89,7 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     "nop" => "b false",
     "lim imm" => "
         swa zero
-        addi (((imm >> 4)+(( imm & 8 ) << 1)) & 0b00001111)
+        addi (((imm >> 4)+(( imm & 8 ) >> 3)) & 0b00001111)
         add acc
         add acc
         add acc

@@ -1,0 +1,42 @@
+swa zero
+swa r6 // LSB
+swa zero
+swa r7
+swa zero
+swa r8
+swa zero
+swa r9 // MSB
+
+swa zero
+swa seg
+
+loop:
+    swa r6
+    addi.f 1
+    swa r6
+    swa zero
+    addi loop
+    b ncarry
+
+    swa r7
+    addi.f 1
+    swa r7
+    swa zero
+    addi loop
+    b ncarry
+
+    swa r8
+    addi.f 1
+    swa r8
+    swa zero
+    addi loop
+    b ncarry
+    
+    swa r9
+    addi.f 1
+    swa r9
+    swa zero
+    addi loop
+    b ncarry
+
+ext 0
