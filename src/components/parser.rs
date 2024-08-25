@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{get_value_from_number_token, Lexem, LexemType};
+use crate::{get_value_from_number_token, InstructionsLexer, Lexem, LexemType};
 
 #[derive(Debug, Clone)]
 pub enum Token{
@@ -144,7 +144,7 @@ pub struct Parser{
     cursor: usize,
     lexems: Vec<Lexem>,
     pub tokens: Vec<Token>,
-    pseudo_instructions: Option<HashMap<String, (Vec<String>,Vec<Token>)>>
+    pseudo_instructions: Option<HashMap<String, (Vec<String>,Vec<Token>)>>,
 }
 
 impl Parser{
@@ -343,7 +343,7 @@ impl Parser{
         }
     }
 
-    fn discover_labels(self: &mut Self) -> (Vec<Token>, HashMap<String, usize>) {
+    fn discover_labels(self: &mut Self, instruction_lexer: &InstructionsLexer) -> (Vec<Token>, HashMap<String, usize>) {
         let mut origin: usize = 0;
         self.cursor = 0;
 
@@ -352,14 +352,14 @@ impl Parser{
         let mut labels: HashMap<String, usize> = HashMap::new();
 
         let mut last_label = String::new();
+
+        let mut dollar_signs = 0;
         
-        for token in self.tokens.iter(){
+        for token in self.tokens.iter_mut(){
             match token{
                 Token::Instruction { name, args } => {
                     
                     let name = name.clone();
-                    let args = args.clone();
-
 
                     match name.value.to_lowercase().as_str() {
                         "org" => {
@@ -378,22 +378,59 @@ impl Parser{
                             self.cursor = 0;
                         }
 
-                        "dw" => {
+                        "db" => {
                         
                             let mut to_add = 0;
     
-                            for arg in args.iter(){
+                            for arg in args.iter_mut(){
                                 match arg.ttype{
                                     LexemType::Ident => to_add += 1,
-                                    LexemType::String => to_add += arg.value.len()*2,
+                                    LexemType::String => to_add += arg.value.len(),
                                     LexemType::Number { .. } => to_add += 1,
                                     _ => {
+                                        if arg.value == "$"{
+                                            let name = format!("${}",dollar_signs);
+                                            let new_lexem = Lexem::new(name.clone(), LexemType::Ident, arg.row, arg.col, arg.filename.clone());
+                                            *arg = new_lexem;
+                                            labels.insert(name, origin+self.cursor);
+                                            to_add += 1;
+                                            dollar_signs += 1;
+                                            continue;
+                                        }
                                         println!("{}:{}:{} Unexpected token {}", arg.filename, arg.row, arg.col, arg.ttype);
                                     }
                                 }
                             }
     
-                            cleaned_tokens.push(Token::Instruction { name, args });
+                            cleaned_tokens.push(Token::Instruction { name, args: args.to_vec() });
+                            self.cursor += to_add;
+                        }
+
+                        "dw" => {
+                        
+                            let mut to_add = 0;
+    
+                            for arg in args.iter_mut(){
+                                match arg.ttype{
+                                    LexemType::Ident => to_add += 2,
+                                    LexemType::String => to_add += arg.value.len()*2,
+                                    LexemType::Number { .. } => to_add += 2,
+                                    _ => {
+                                        if arg.value == "$"{
+                                            let name = format!("${}",dollar_signs);
+                                            let new_lexem = Lexem::new(name.clone(), LexemType::Ident, arg.row, arg.col, arg.filename.clone());
+                                            *arg = new_lexem;
+                                            labels.insert(name, origin+self.cursor);
+                                            to_add += 2;
+                                            dollar_signs += 1;
+                                            continue;
+                                        }
+                                        println!("{}:{}:{} Unexpected token {}", arg.filename, arg.row, arg.col, arg.ttype);
+                                    }
+                                }
+                            }
+    
+                            cleaned_tokens.push(Token::Instruction { name, args: args.to_vec() });
                             self.cursor += to_add;
                         }
 
@@ -401,18 +438,27 @@ impl Parser{
                         
                             let mut to_add = 0;
     
-                            for arg in args.iter(){
+                            for arg in args.iter_mut(){
                                 match arg.ttype{
-                                    LexemType::Ident => to_add += 2,
+                                    LexemType::Ident => to_add += 4,
                                     LexemType::String => to_add += arg.value.len()*4,
-                                    LexemType::Number { .. } => to_add += 2,
+                                    LexemType::Number { .. } => to_add += 4,
                                     _ => {
+                                        if arg.value == "$"{
+                                            let name = format!("${}",dollar_signs);
+                                            let new_lexem = Lexem::new(name.clone(), LexemType::Ident, arg.row, arg.col, arg.filename.clone());
+                                            *arg = new_lexem;
+                                            labels.insert(name, origin+self.cursor);
+                                            to_add += 4;
+                                            dollar_signs += 1;
+                                            continue;
+                                        }
                                         println!("{}:{}:{} Unexpected token {}", arg.filename, arg.row, arg.col, arg.ttype);
                                     }
                                 }
                             }
     
-                            cleaned_tokens.push(Token::Instruction { name, args });
+                            cleaned_tokens.push(Token::Instruction { name, args: args.to_vec() });
                             self.cursor += to_add;
                         }
 
@@ -420,27 +466,49 @@ impl Parser{
                         
                             let mut to_add = 0;
     
-                            for arg in args.iter(){
+                            for arg in args.iter_mut(){
                                 match arg.ttype{
-                                    LexemType::Ident => to_add += 4,
+                                    LexemType::Ident => to_add += 8,
                                     LexemType::String => to_add += arg.value.len()*8,
-                                    LexemType::Number { .. } => to_add += 4,
+                                    LexemType::Number { .. } => to_add += 8,
                                     _ => {
+                                        if arg.value == "$"{
+                                            let name = format!("${}",dollar_signs);
+                                            let new_lexem = Lexem::new(name.clone(), LexemType::Ident, arg.row, arg.col, arg.filename.clone());
+                                            *arg = new_lexem;
+                                            labels.insert(name, origin+self.cursor);
+                                            to_add += 8;
+                                            dollar_signs += 1;
+                                            continue;
+                                        }
                                         println!("{}:{}:{} Unexpected token {}", arg.filename, arg.row, arg.col, arg.ttype);
                                     }
                                 }
                             }
     
-                            cleaned_tokens.push(Token::Instruction { name, args });
+                            cleaned_tokens.push(Token::Instruction { name, args: args.to_vec() });
                             self.cursor += to_add;
                         }
 
                         _ => {
-                            // cleaned_tokens.push(Token::Instruction { name, args });
+                            let instruciton_size = instruction_lexer.get_instruction_size(&name.value);
+                            if instruciton_size == usize::MAX{
+                                eprintln!("{}:{}:{} Instruction `{}` doesn't exist", name.filename, name.row, name.col,&name.value);
+                                std::process::exit(1);
+                            }
 
-                            cleaned_tokens.push( Token::Instruction{ name, args: fix_sub_label(&last_label, args)});
-
-                            self.cursor += 1;
+                            for arg in args.iter_mut() {
+                                if arg.value == "$"{
+                                    let name = format!("${}",dollar_signs);
+                                    let new_lexem = Lexem::new(name.clone(), LexemType::Ident, arg.row, arg.col, arg.filename.clone());
+                                    *arg = new_lexem;
+                                    labels.insert(name, origin+self.cursor);
+                                    dollar_signs += 1;
+                                }
+                            }
+                            
+                            cleaned_tokens.push( Token::Instruction{ name, args: fix_sub_label(&last_label, args.clone())});
+                            self.cursor += instruciton_size;
                         }
 
                     }
@@ -516,8 +584,10 @@ impl Parser{
         new_args
     }
 
-    fn calculate_labels(self: &mut Self){
-        let (mut cleaned_tokens, labels) = self.discover_labels();
+    fn calculate_labels(self: &mut Self, instruction_lexer: &InstructionsLexer){
+        let (mut cleaned_tokens, labels) = self.discover_labels(instruction_lexer);
+
+        dbg!(&labels);
 
         for arg in cleaned_tokens.iter_mut(){
             match arg{
@@ -647,13 +717,13 @@ impl Parser{
         }
     }
 
-    pub fn parse<'a>(self: &mut Self, lexems: &Vec<Lexem>){
+    pub fn parse<'a>(self: &mut Self, lexems: &Vec<Lexem>, instruction_lexer: &InstructionsLexer,){
         
         self.first_stage_parse(lexems);
 
         self.expand_pseudo_instructions();
 
-        self.calculate_labels();
+        self.calculate_labels(instruction_lexer);
 
         Self::colapse_closures(&mut self.tokens);
 

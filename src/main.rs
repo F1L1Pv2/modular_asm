@@ -51,7 +51,7 @@ fn main() {
     
     let mut parser: Parser = Parser::new(Some(PseudoInstructions::initialize()));
     
-    parser.parse(&lexer.lexems);
+    parser.parse(&lexer.lexems, &instruction_lexer);
     
     let mut codegen: CodeGen = CodeGen::new(&parser.tokens, &instruction_lexer.instructions);
 
