@@ -43,16 +43,16 @@ pub const CONDITIONS_TO_VAL: phf::Map<&'static str, usize> = phf_map!{
     "a" => 3,
     "nb" => 4,
     "b" => 5,
-    "even" => 6,
-    "odd" => 7,
-    "zero" => 8,
-    "nzero" => 9,
-    "nsign" => 10,
-    "sign" => 11,
-    "ncarry" => 12,
-    "carry" => 13,
-    "noverflow" => 14,
-    "overflow" => 15
+    "noverflow" => 6,
+    "overflow" => 7,
+    "nsign" => 8,
+    "sign" => 9,
+    "even" => 10,
+    "odd" => 11,
+    "zero" => 12,
+    "nzero" => 13,
+    "ncarry" => 14,
+    "carry" => 15,
 };
 
 
