@@ -145,12 +145,10 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         not src
         nand.f tr1
     ",
-    // TODO: This throws an error "You can only have one name per pseudoinstruction".
-    // TODO: Maybe add support for 2-arg pseudo-instructions?
-    // "andi src imm" => "
-    //     lim imm
-    //     and src
-    // ",
+    "andi src, imm" => "
+        lim imm
+        and src
+    ",
     "xor src" => "
         sta tr1
         nand src
