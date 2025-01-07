@@ -27,7 +27,7 @@ impl PseudoInstructions{
 
             if pseudo_instructions_parser.tokens.len() > 1{
                 dbg!(pseudo_instructions_parser.tokens);
-                println!("PSEUDO_INSTRUCTIONS: You can only have one name per pseudoinstruction");
+                println!("PSEUDO_INSTRUCTIONS: expected ',' between arguments");
                 std::process::exit(1);
             }
 
