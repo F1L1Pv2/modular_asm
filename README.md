@@ -30,3 +30,17 @@
     ```
 - flexible instruction set and registers
   #### just look at config.rs inside src folder and see for yourself
+
+## Usage
+
+To compile one program:
+
+```
+cargo run progs/bubblesort.asm
+```
+
+To compile all programs:
+
+```
+cargo run progs/*.asm
+```

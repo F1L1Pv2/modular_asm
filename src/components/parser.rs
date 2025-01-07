@@ -491,8 +491,8 @@ impl Parser{
                         }
 
                         _ => {
-                            let instruciton_size = instruction_lexer.get_instruction_size(&name.value);
-                            if instruciton_size == usize::MAX{
+                            let instruction_size = instruction_lexer.get_instruction_size(&name.value);
+                            if instruction_size == usize::MAX{
                                 eprintln!("{}:{}:{} Instruction `{}` doesn't exist", name.filename, name.row, name.col,&name.value);
                                 std::process::exit(1);
                             }
@@ -508,7 +508,7 @@ impl Parser{
                             }
                             
                             cleaned_tokens.push( Token::Instruction{ name, args: fix_sub_label(&last_label, args.clone())});
-                            self.cursor += instruciton_size;
+                            self.cursor += instruction_size;
                         }
 
                     }
@@ -586,8 +586,6 @@ impl Parser{
 
     fn calculate_labels(self: &mut Self, instruction_lexer: &InstructionsLexer){
         let (mut cleaned_tokens, labels) = self.discover_labels(instruction_lexer);
-
-        dbg!(&labels);
 
         for arg in cleaned_tokens.iter_mut(){
             match arg{

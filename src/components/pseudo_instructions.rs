@@ -26,6 +26,7 @@ impl PseudoInstructions{
             pseudo_instructions_parser.first_stage_parse(&pseudo_instructions_lexer.lexems);
 
             if pseudo_instructions_parser.tokens.len() > 1{
+                dbg!(pseudo_instructions_parser.tokens);
                 println!("PSEUDO_INSTRUCTIONS: You can only have one name per pseudoinstruction");
                 std::process::exit(1);
             }

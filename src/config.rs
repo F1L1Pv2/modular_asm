@@ -57,14 +57,15 @@ pub const CONDITIONS_TO_VAL: phf::Map<&'static str, usize> = phf_map!{
 
 
 pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
-    "ext"  => "00000  000",
-    "swa"  => "{R4}   0 001",
+    "ext"  => "0000   1000",
+    "sta"  => "{R4}   0000",
+    "lda"  => "{R4}   0 001",
     "add"  => "{R4}   0 010",
     "addi" => "{IMM4} 0 011",
     "nand" => "{R4}   0 100",
     "ld"   => "{R4}   0 101",
 
-    "swa.f"  => "{R4}   1 001",
+    "lda.f"  => "{R4}   1 001",
     "add.f"  => "{R4}   1 010",
     "addi.f" => "{IMM4} 1 011",
     "nand.f" => "{R4}   1 100",
@@ -88,7 +89,7 @@ pub const INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
 pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     "nop" => "b false",
     "lim imm" => "
-        swa zero
+        lda zero
         addi (((imm >> 4)+(( imm & 8 ) >> 3)) & 0b00001111)
         add acc
         add acc
@@ -96,68 +97,91 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
         add acc
         addi (imm & 0b00001111)
     ",
-    "lda src" => "
-        swa zero
-        add src
-    ",
-    "sta dest" => "
-        swa dest
-        swa zero
-        add dest
-    ",
     "mov dest, src" => "
-        swa dest
-        swa zero
-        add src
-        swa dest
+        sta tr1
+        lda src
+        sta dest
+        lda tr1
+    ",
+    "mov.f dest, src" => "
+        sta tr1
+        lda.f src
+        sta dest
+        lda tr1
+    ",
+    "swa src" => "
+        sta tr1
+        lda src
+        sta tr2
+        lda tr1
+        sta src
+        lda tr2
     ",
     "not src" => "
-        swa zero
-        add src
+        lda src
         nand acc
+    ",
+    "not.f src" => "
+        lda src
+        nand.f acc
     ",
     "and src" => "
         nand src
         nand acc
     ",
-    "andi imm" => "    
-        swa tr1
-        lim imm
-        and tr1
+    "and.f src" => "
+        nand src
+        nand.f acc
     ",
-    "or src" => "   
+    "or src" => "
         nand acc
-        swa tr1
+        sta tr1
         not src
         nand tr1
     ",
-    "ori imm" => "
+    "or.f src" => "
         nand acc
-        swa tr1
-        lim imm
-        nand tr1
+        sta tr1
+        not src
+        nand.f tr1
     ",
-    "xor src" => "    
-        swa tr1
-        swa zero
-        add src
+    // TODO: This throws an error "You can only have one name per pseudoinstruction".
+    // TODO: Maybe add support for 2-arg pseudo-instructions?
+    // "andi src imm" => "
+    //     lim imm
+    //     and src
+    // ",
+    "xor src" => "
+        sta tr1
+        nand src
+        sta tr2
         nand tr1
-        swa tr1
-        nand tr1
-        swa tr1
+        sta tr1
+        lda tr2
         nand src
         nand tr1
     ",
-    "xori imm" => "
-        swa tr2
-        lim imm
-        xor tr2
+    "xor.f src" => "
+        sta tr1
+        nand src
+        sta tr2
+        nand tr1
+        sta tr1
+        lda tr2
+        nand src
+        nand.f tr1
     ",
     "sub src" => "
-        swa tr1
+        sta tr1
         nand src
         addi 1
         add tr1
+    ",
+    "sub.f src" => "
+        sta tr1
+        nand src
+        addi 1
+        add.f tr1
     ",
     "suba src" => "
         nand acc
@@ -166,12 +190,11 @@ pub const PSEUDO_INSTRUCTIONS: phf::Map<&'static str, &'static str> = phf_map!{
     ",
     "brc cond, addr" => "
         lim ((addr >> 8) & 0xFF)
-        swa seg
+        sta seg
         lim (addr & 0xFF)
         b cond
     ",
     "jmp addr" => "
         brc true, addr
     ",
-
 };
